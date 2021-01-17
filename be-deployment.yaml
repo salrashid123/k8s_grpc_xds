@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: be1-srv
+  labels:
+    app: be1   
+spec:
+  clusterIP: None
+  ports:
+  - name: grpc
+    port: 50051   
+  selector:
+    app: be1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: be1-deployment
+  labels:
+    app: be1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: be1
+  template:
+    metadata:
+      labels:
+        app: be1
+    spec:
+      containers:
+      - name: be1-container
+        image: salrashid123/be_xds_server
+        imagePullPolicy: Always        
+        ports:
+        - containerPort: 50051
+          name: grpc           
+        command: ["/grpc_server"]
+        args: ["--grpcport", "0.0.0.0:50051"]
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: be2-srv
+#   labels:
+#     app: be2   
+# spec:
+#   clusterIP: None
+#   ports:
+#   - name: grpc
+#     port: 50051   
+#   selector:
+#     app: be2
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: be2-deployment
+#   labels:
+#     app: be2
+# spec:
+#   replicas: 2
+#   selector:
+#     matchLabels:
+#       app: be2
+#   template:
+#     metadata:
+#       labels:
+#         app: be2
+#     spec:
+#       containers:
+#       - name: be2-container
+#         image: salrashid123/be_xds_server
+#         imagePullPolicy: Always        
+#         ports:
+#         - containerPort: 50051
+#           name: grpc           
+#         command: ["/grpc_server"]
+#         args: ["--grpcport", "0.0.0.0:50051"]
+---

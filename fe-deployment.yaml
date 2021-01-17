@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xds-conf
+data:
+  xds_bootstrap.json:  |
+    {
+      "xds_servers": [
+        {
+          "server_uri": "xds-srv.default.svc.cluster.local:18000",
+          "channel_creds": [
+            {
+              "type": "insecure"
+            }
+          ]      
+        }
+      ],
+      "node": {
+        "id": "b7f9c818-fb46-43ca-8662-d3bdbcf7ec18~10.0.0.1",
+        "metadata": {
+          "R_GCP_PROJECT_NUMBER": "123456789012"
+        },
+        "locality": {
+          "zone": "us-central1-a"
+        }
+      }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fe-srv
+  labels:
+    type: fe-srv
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    type: fe-svc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fe-deployment
+  labels:
+    type: fe-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      type: fe-svc
+  template:
+    metadata:
+      labels:
+        type: fe-svc
+    spec:  
+      containers:
+      - name: http
+        image: salrashid123/fe_xds_server
+        imagePullPolicy: Always
+        command: ["/fe_xds_server"]
+        args: ["--httpport", ":8080"]
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        env:
+        - name: GRPC_XDS_BOOTSTRAP
+          value: /config/xds_bootstrap.json
+        - name: GRPC_GO_LOG_VERBOSITY_LEVEL
+          value: "99"
+        - name:  GRPC_GO_LOG_SEVERITY_LEVEL
+          value: info          
+        volumeMounts:
+          - name: xds-vol
+            mountPath: /config
+      volumes:
+      - name: xds-vol
+        configMap:
+          name: xds-conf
+          items:
+          - key: xds_bootstrap.json
+            path: xds_bootstrap.json

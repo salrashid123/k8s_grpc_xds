@@ -1,0 +1,102 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: xds-sa
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: xds-service-get
+rules:
+- apiGroups: [""]
+  resources: ["services", "endpoints"]
+  verbs: ["get", "watch", "list"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: service-get-binding
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: xds-sa
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: xds-service-get
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xds-srv
+  labels:
+    type: xds-srv
+spec:
+  # type: ClusterIP
+  type: NodePort
+  ports:
+  - name: xds
+    port: 18000
+    protocol: TCP
+    targetPort: 18000
+  selector:
+    type: xds-svc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xds-deployment
+  labels:
+    type: xds-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      type: xds-svc
+  template:
+    metadata:
+      labels:
+        type: xds-svc
+    spec:
+      serviceAccountName: xds-sa    
+      containers:
+      - name: xds
+        image: salrashid123/xds_lb_svc
+        args: ["--refreshInterval", "10"]        
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 18000
+          protocol: TCP
+        volumeMounts:
+          - name: xds-conf-vol
+            mountPath: /config
+      volumes:
+      - name: xds-conf-vol
+        configMap:
+          name: xds-svc-config
+          items:
+          - key: svc_config.json
+            path: svc_config.json             
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xds-svc-config
+data:
+  svc_config.json: |
+    {
+        "services": [
+          {
+            "serviceName": "be1-srv",
+            "namespace": "default",
+            "portName": "grpc",
+            "protocol": "tcp",
+            "grpcServiceName": "echo.EchoServer",
+            "zone": "us-central1-a",
+            "region": "us-central1"
+          }                                
+        ]
+    }
