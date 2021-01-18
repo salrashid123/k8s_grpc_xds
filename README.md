@@ -24,6 +24,8 @@ The backend system we will deploy here is `headless` which is rarely used so...t
 - [Kubernetes Headless Service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services)
 - [GKE gRPC Loadbalancing](https://github.com/salrashid123/gcegrpc/tree/master/gke_svc_lb)
 - [gRPC Load Balancing on Kubernetes without Tears](https://kubernetes.io/blog/2018/11/07/grpc-load-balancing-on-kubernetes-without-tears/)
+- [LoadBalancing gRPC for Kubernetes Cluster Services](https://medium.com/google-cloud/loadbalancing-grpc-for-kubernetes-cluster-services-3ba9a8d8fc03)
+- [Load Balancing gRPC services](https://www.evanjones.ca/grpc-load-balancing.html)
 
 ---
 
@@ -210,7 +212,7 @@ Well, there are many todos here (i only did this sample on a cold sunday..)
 
 #### Support multiple services
 
-For one thing, i coudn't not get the XDS server handle muliple services.  That is, i'd like to deploy two different backends and then let xDS server query over both IP addresses.  The configmap i'd like to enable would be
+For one thing, i coudn't not get the XDS server handle multiple services.  That is, i'd like to deploy two different backends and then let xDS server query over both IP addresses.  The configmap i'd like to enable would be
 
 ```yaml
 apiVersion: v1
@@ -243,7 +245,9 @@ data:
     }
 ```
 
-However, if i invoke any backend service, the XDS server does not return the listener
+However, if i invoke any backend service, the XDS server does not return the listener.  
+
+> Perhaps explained in [Issue #349](https://github.com/envoyproxy/go-control-plane/issues/349)
 
 ```bash
 $ curl -v `minikube  service fe-srv --url`/be1-srv
@@ -286,7 +290,7 @@ time="2021-01-17T15:39:39Z" level=info msg="OnStreamRequest 1  Request[
 			   user_agent_version:\"1.33.2\" 
 			   client_features:\"envoy.lb.does_not_support_overprovisioning\"
 			   } 
-		resource_names:\"be1-srv\"    <<<<<<<<<<<<<
+		resource_names:\"be1-srv\"                                                               <<<<<<<<<<<<<
 		type_url:\"type.googleapis.com/envoy.api.v2.Listener\"
 	]"
 time="2021-01-17T15:39:39Z" level=info msg="cb.Report()  callbacks" fetches=0 requests=1

@@ -35,8 +35,7 @@ metadata:
   labels:
     type: xds-srv
 spec:
-  # type: ClusterIP
-  type: NodePort
+  type: ClusterIP
   ports:
   - name: xds
     port: 18000
@@ -97,6 +96,6 @@ data:
             "grpcServiceName": "echo.EchoServer",
             "zone": "us-central1-a",
             "region": "us-central1"
-          }                                
+          }                          
         ]
     }
