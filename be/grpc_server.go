@@ -1,12 +1,13 @@
 package main
 
 import (
-	"echo"
 	"flag"
 	"fmt"
 	"log"
 	"net"
 	"os"
+
+	echo "github.com/salrashid123/grpc_health_proxy/example/src/echo"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

@@ -12,7 +12,8 @@ data:
             {
               "type": "insecure"
             }
-          ]      
+          ],
+          "server_features": ["xds_v3"]          
         }
       ],
       "node": {

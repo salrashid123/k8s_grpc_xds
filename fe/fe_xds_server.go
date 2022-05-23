@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	"echo"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/salrashid123/grpc_health_proxy/example/src/echo"
 
 	"github.com/gorilla/mux"
 	"golang.org/x/net/http2"
